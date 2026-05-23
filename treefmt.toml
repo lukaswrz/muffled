@@ -1,0 +1,19 @@
+[formatter.nix]
+command = "nixfmt"
+options = ["--"]
+includes = ["*.nix"]
+
+[formatter.toml]
+command = "taplo"
+options = ["format", "--"]
+includes = ["*.toml"]
+
+[formatter.prettier]
+command = "prettier"
+options = ["--write", "--"]
+includes = ["*.md", "*.html", "*.js", "*.css"]
+
+[formatter.go]
+command = "gofmt"
+options = ["-w", "--"]
+includes = ["*.go"]
