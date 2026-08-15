@@ -8,7 +8,7 @@ buildGoModule {
 
   src = lib.cleanSource ./.;
 
-  vendorHash = "sha256-+/XSQWXx+SRoes7x1Gqj3J9z19CpQj05OFqv63ZP5yo=";
+  vendorHash = "sha256-cWUDkXLZLhCsJ4X9v2XMJS6x6K9M0JrTKx6ZiVuGcwk=";
 
   meta = {
     description = "A ListenBrainz widget";

@@ -13,4 +13,4 @@ require (
 	hack.moontide.ink/lukas/gonfig v0.0.0-20260815002155-23a081421613
 )
 
-require github.com/hashicorp/errwrap v1.0.0 // indirect
+require github.com/hashicorp/errwrap v1.1.0 // indirect
