@@ -21,3 +21,5 @@ interval = 120 # Don't set this too low if you're using the default instance
 listenbrainz_base_url = "https://api.listenbrainz.org/1"
 widget_path = "/path/to/widget.html" # If you want to use custom HTML, CSS, and JS
 ```
+
+If you want to customize the appearance or behavior, check the [assets directory](internal/assets/assets) for the default widget implementation.
