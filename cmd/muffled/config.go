@@ -54,7 +54,7 @@ func (c *config) Validate() error {
 		))
 	}
 
-	mi := 10
+	mi := 1
 	if c.Interval < mi {
 		merr = multierror.Append(merr, fmt.Errorf(
 			"interval %d is too low, please use a value equal to or greater than %d",
