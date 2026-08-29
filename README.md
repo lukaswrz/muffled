@@ -23,3 +23,29 @@ widget_path = "/path/to/widget.html" # If you want to use custom HTML, CSS, and 
 ```
 
 If you want to customize the appearance or behavior, check the [assets directory](internal/assets/assets) for the default widget implementation.
+
+## Usage via Nix
+
+This flake outputs a package via `packages.<system>.default` and a NixOS module via `nixosModules.default`.
+See [flake.nix](flake.nix) for more details.
+
+### NixOS module usage
+
+Here's an example Muffled configuration for NixOS:
+
+```nix
+{
+  services.muffled = {
+    enable = true;
+    settings = {
+      user = "lukaswrz";
+      listen = "localhost:8080";
+      log_level = "info";
+      interval = 120;
+      listenbrainz_base_url = "https://api.listenbrainz.org/1";
+    };
+  };
+}
+```
+
+Take a look at the [module source](module.nix) for more details.
