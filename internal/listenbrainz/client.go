@@ -88,15 +88,16 @@ type AdditionalInfo struct {
 	TrackNumber             int      `json:"tracknumber"`
 }
 
-func (c *Client) GetPlayingNow(username string) (PlayingNowResponse, error) {
+func (c *Client) GetPlayingNow(username string) (r PlayingNowResponse, err error) {
 	url, err := c.endpoint("user", username, "playing-now")
 	if err != nil {
-		return PlayingNowResponse{}, err
+		return
 	}
 
 	raw, err := c.HTTPClient.Get(url.String())
 	if err != nil {
-		return PlayingNowResponse{}, fmt.Errorf("failed to make request: %w", err)
+		err = fmt.Errorf("failed to make request: %w", err)
+		return
 	}
 	defer func() {
 		cerr := raw.Body.Close()
@@ -106,13 +107,14 @@ func (c *Client) GetPlayingNow(username string) (PlayingNowResponse, error) {
 	}()
 
 	if raw.StatusCode != http.StatusOK {
-		return PlayingNowResponse{}, fmt.Errorf("unexpected status code after making a GET request to %q: %d", url.String(), raw.StatusCode)
+		err = fmt.Errorf("unexpected status code after making a GET request to %q: %d", url.String(), raw.StatusCode)
+		return
 	}
 
-	response := PlayingNowResponse{}
-	if err := json.NewDecoder(raw.Body).Decode(&response); err != nil {
-		return PlayingNowResponse{}, fmt.Errorf("failed to decode response: %w", err)
+	if err = json.NewDecoder(raw.Body).Decode(&r); err != nil {
+		err = fmt.Errorf("failed to decode response: %w", err)
+		return
 	}
 
-	return response, nil
+	return
 }
