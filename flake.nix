@@ -5,6 +5,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       ...
     }:
@@ -45,13 +46,15 @@
         }
       );
 
-      formatter = forAllSystems ({ pkgs, ... }: pkgs.treefmt);
-
       packages = forAllSystems (
         { pkgs, ... }:
         {
           default = pkgs.callPackage ./package.nix { };
         }
       );
+
+      nixosModules.default = import ./module.nix self;
+
+      formatter = forAllSystems ({ pkgs, ... }: pkgs.treefmt);
     };
 }
