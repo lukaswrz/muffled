@@ -11,6 +11,7 @@ type Manager[T any] struct {
 
 	muClients sync.RWMutex
 	clients   map[uuid.UUID]chan T
+	ClientsC  chan int
 
 	muState   sync.RWMutex
 	latest    T
@@ -19,8 +20,9 @@ type Manager[T any] struct {
 
 func NewManager[T any](bufsize int) *Manager[T] {
 	return &Manager[T]{
-		clients: make(map[uuid.UUID]chan T),
-		bufsize: bufsize,
+		clients:  make(map[uuid.UUID]chan T),
+		bufsize:  bufsize,
+		ClientsC: make(chan int, 1),
 	}
 }
 
@@ -38,7 +40,7 @@ func (m *Manager[T]) Subscribe() (<-chan T, func()) {
 }
 
 func (m *Manager[T]) Broadcast(message T) {
-	m.update(message)
+	m.updateLatest(message)
 
 	m.muClients.RLock()
 
@@ -69,11 +71,21 @@ func (m *Manager[T]) Latest() (T, bool) {
 	return m.latest, true
 }
 
+func (m *Manager[T]) updateLatest(message T) {
+	m.muState.Lock()
+	defer m.muState.Unlock()
+
+	m.latest = message
+	m.hasLatest = true
+}
+
 func (m *Manager[T]) connect(id uuid.UUID, ch chan T) {
 	m.muClients.Lock()
 	defer m.muClients.Unlock()
 
 	m.clients[id] = ch
+
+	m.updateClientsC()
 }
 
 func (m *Manager[T]) disconnect(id uuid.UUID) {
@@ -87,12 +99,13 @@ func (m *Manager[T]) disconnect(id uuid.UUID) {
 
 	delete(m.clients, id)
 	close(ch)
+
+	m.updateClientsC()
 }
 
-func (m *Manager[T]) update(message T) {
-	m.muState.Lock()
-	defer m.muState.Unlock()
-
-	m.latest = message
-	m.hasLatest = true
+func (m *Manager[T]) updateClientsC() {
+	select {
+	case m.ClientsC <- len(m.clients):
+	default:
+	}
 }

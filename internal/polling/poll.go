@@ -18,7 +18,13 @@ func Poll(cm *notify.Manager[events.PlayingNowEvent], lb *listenbrainz.Client, i
 	t := time.NewTicker(time.Duration(interval) * time.Second)
 	defer t.Stop()
 
+	c := 0
+
 	for {
+		for c == 0 {
+			c = <-cm.ClientsC
+		}
+
 		slog.Debug("requesting current track")
 		response, err := lb.GetPlayingNow(username)
 		if err != nil {
@@ -39,6 +45,9 @@ func Poll(cm *notify.Manager[events.PlayingNowEvent], lb *listenbrainz.Client, i
 
 		old = new
 
-		<-t.C
+		select {
+		case c = <-cm.ClientsC:
+		case <-t.C:
+		}
 	}
 }
