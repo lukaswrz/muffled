@@ -1,9 +1,7 @@
 package polling
 
 import (
-	"fmt"
 	"log/slog"
-	"reflect"
 	"time"
 
 	"hack.moontide.ink/lukas/muffled/internal/events"
@@ -11,42 +9,29 @@ import (
 	"hack.moontide.ink/lukas/muffled/internal/notify"
 )
 
-func Poll(cm *notify.Manager[events.PlayingNowEvent], lb *listenbrainz.Client, interval int, username string) error {
-	first := true
-	old := events.PlayingNowEvent{}
-
+func Poll(nm *notify.Manager[events.PlayingNowEvent], lb *listenbrainz.Client, interval int, username string) error {
 	t := time.NewTicker(time.Duration(interval) * time.Second)
 	defer t.Stop()
 
-	c := 0
+	r := refresher{
+		username: username,
+		lb:       lb,
+		nm:       nm,
+	}
 
+	c := 0
 	for {
 		for c == 0 {
-			c = <-cm.ClientsC
+			c = <-nm.ClientsC
 		}
 
-		slog.Debug("requesting current track")
-		response, err := lb.GetPlayingNow(username)
-		if err != nil {
-			return fmt.Errorf("unable to request playing now event: %w", err)
+		slog.Debug("refreshing...")
+		if err := r.refresh(); err != nil {
+			slog.Error("refresh failed", "error", err)
 		}
-
-		new, err := events.MapPlayingNowEvent(response)
-		if err != nil {
-			return fmt.Errorf("unable to map response to event: %w", err)
-		}
-
-		slog.Debug("received track", "title", new.Title, "artist", new.Artist, "release", new.Release)
-
-		if first || !reflect.DeepEqual(old, new) {
-			first = false
-			cm.Broadcast(new)
-		}
-
-		old = new
 
 		select {
-		case c = <-cm.ClientsC:
+		case c = <-nm.ClientsC:
 		case <-t.C:
 		}
 	}

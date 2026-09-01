@@ -51,7 +51,7 @@ func NewClient(base string) (*Client, error) {
 
 	return &Client{
 		BaseURL:    p,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: &http.Client{Timeout: 30 * time.Second},
 	}, nil
 }
 
